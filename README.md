@@ -16,7 +16,7 @@
 
 **hstat** is a script to query information about jobs running on a computing cluster using `qstat`, providing details such as job ID, queue name, processor information, node information, memory usage, and running path.
 
-### hrun
+### hrun_exp
 
 **hrun** is an example script to submit jobs on the 'hydra' cluster using PBS directives. It allows users to customize job settings such as user name, job name, log file names, node number, processor per node, queue name, and executable command.
 
