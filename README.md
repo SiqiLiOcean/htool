@@ -28,13 +28,12 @@
    git clone https://github.com/SiqiLiOcean/htool.git
    ```
 
-2. Add the htool directory to PATH
-   For csh
-   ```sh
+2. Add the htool directory to PATH. For csh
+   ```csh
    setenv PATH /hosts/hydra.smast.umassd.edu/data2/siqili/script/htool:$PATH
    ```
    For bash
-   ```sh
+   ```bash
    export PATH=/hosts/hydra.smast.umassd.edu/data2/siqili/script/htool:$PATH
    ```
 4. Run the scripts as needed, following the usage instructions provided in each script's README.
