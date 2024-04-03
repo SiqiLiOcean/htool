@@ -29,11 +29,13 @@
    
 2. Add the htool directory to PATH. For csh
    ```csh
-   setenv PATH /YOUR_htool_PATH:$PATH
+   setenv HTOOL /YOUR_htool_PATH 
+   setenv PATH ${HTOOL}:$PATH
    ```
    For bash
    ```bash
-   export PATH=/YOUR_htool_PATH:$PATH
+   export HTOOL /YOUR_htool_PATH 
+   export PATH=${HTOOL}:$PATH
    ```
    
 3. Run the scripts as needed, following the usage instructions provided in each code.
