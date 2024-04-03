@@ -57,7 +57,3 @@ There is a 'hello' example in the directory **exp** for testing.
 ## Author
 
 **htool** is maintained by Siqi Li, SMAST.
-
----
-
-Please adjust the authorship information and any other details as needed for your project.
