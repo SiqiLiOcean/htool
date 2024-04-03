@@ -29,11 +29,11 @@
    
 2. Add the htool directory to PATH. For csh
    ```csh
-   setenv PATH /hosts/hydra.smast.umassd.edu/data2/siqili/script/htool:$PATH
+   setenv PATH /YOUR_htool_PATH:$PATH
    ```
    For bash
    ```bash
-   export PATH=/hosts/hydra.smast.umassd.edu/data2/siqili/script/htool:$PATH
+   export PATH=/YOUR_htool_PATH:$PATH
    ```
    
 3. Run the scripts as needed, following the usage instructions provided in each code.
