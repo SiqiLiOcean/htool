@@ -25,10 +25,10 @@
 1. Clone the 'htool' repository:
 
    ```sh
-   git clone https://github.com/your-username/htool.git
+   git clone https://github.com/SiqiLiOcean/htool.git
    ```
 
-2. Navigate to the 'htool' directory:
+2. Add the htool directory to PATH
 
    ```sh
    cd htool
