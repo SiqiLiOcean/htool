@@ -1,0 +1,31 @@
+#!/bin/bash
+#========================================================================
+# hscan - This script checks the status of nodes in a cluster.
+#         It determines if a node is online, idle, or occupied
+#         based on ping availability and CPU usage.
+#
+# Usage:
+# hscan
+#
+# Note: It might take some time to ssh to each rest node
+#
+# Siqi Li, SMAST
+# 2024-04-02
+#========================================================================
+
+
+PCT=50
+
+rest_nodes=$(hnode -R)
+for node in $rest_nodes; do
+    if ! ping -c 1 $node >/dev/null 2>&1; then
+        echo $node: offline
+        continue
+    fi
+    users=$(ssh -q $(whoami)@$node "top -b -n 1 | sed '1,/PID/d' | awk '\$9 >= $PCT {print \$2}' | sort | uniq")
+    if [ ! -z "$users" ]; then
+        echo $node: ocupied by $users
+        continue
+    fi
+    echo $node: idle
+done

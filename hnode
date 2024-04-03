@@ -1,0 +1,115 @@
+#!/bin/bash
+#========================================================================
+# hnode - A script to query node names
+#
+# Usage:
+# hstat 
+#   -A|--All             Display the all nodes
+#   -U|--Used            Display the used nodes
+#   -R|--Rest            Display the rest nodes
+#   -a|--all  QUEUE      Display the all nodes of a specified queue
+#   -u|--used QUEUE      Display the used nodes of a specified queue
+#   -r|--rest QUEUE      Display the rest nodes of a specified queue
+#   -i|--idle QUEUE NN   Display the idle nodes of a specified queue
+#   -h, --help           Display the usage information
+#
+# Examples:
+#   hnode -a microway    Display all nodes on microway
+#   hnode -u microway    Display used nodes on microway
+#   hnode -r microway    Display rest nodes on microway
+#   hnode -i microway 2  Display 2 idle nodes on microway
+#
+# Note: If no options are provided, the usage information is displayed.
+#
+#
+# Siqi Li, SMAST
+# 2024-04-03
+#========================================================================
+
+# Function to display usage information
+usage() {
+    echo "Usage: hnode" 1>&2
+    echo "    [-A|--All]  or [-a|--all]  QUEUE: show all nodes" 1>&2
+    echo "    [-U|--Used] or [-u|--used] QUEUE: show used nodes" 1>&2
+    echo "    [-R|--Rest] or [-r|--rest] QUEUE: show rest nodes" 1>&2
+    echo "    [-i|--ible] QUEUE NN: show idle nodes" 1>&2
+    echo "    [-h|--help] : usage" 1>&2
+    exit 1
+}
+
+KEY=$1
+QUEUE=$2
+NN=$3
+PCT=50
+
+# Options
+case $KEY in
+    -A|--All)
+        lines=$(pbsnodes -a | awk '/resources_available.host/ {host=$3} /queue/ {queue=$3} host && queue {print host, queue; host=""; queue=""}' | paste -d' ' - -)
+        echo $lines | xargs -n 2
+        ;;
+    -a|--all)
+        lines=$($0 -A)
+	echo "$lines" | awk -v queue="$QUEUE" '{for (i=2; i<=NF; i+=2) {if ($i == queue ) print $(i-1)}}' | sort
+	;;
+    -U|--Used)
+	qstat -tn1 | grep -o 'c[0-9]*-[0-9]*' | sort | uniq
+        ;;
+    -u|--used)
+	while IFS= read -r line; do
+       	    queue=$(echo "$line" | awk '{print $3}')
+            node=$(echo "$line" | awk '{print $NF}')
+           if [ "${queue:0:7}" == "${QUEUE:0:7}" ]; then
+               nodes+=" $node"
+           fi
+        done <<< `qstat -tn1`
+	echo $nodes | grep -o 'c[0-9]*-[0-9]*' | sort | uniq
+	;;
+    -R|--Rest)
+        lines=$($0 -A)
+        nodes=$(echo ${lines} | awk '{for (i=1; i<=NF; i+=2) printf $i" "}'| tr ' ' '\n'| sort )
+	used_nodes=$($0 -U | tr ' ' '\n') 
+	comm -23 <(echo "$nodes") <(echo "$used_nodes")
+	;;    
+    -r|--rest)
+        nodes=$($0 -a $QUEUE)
+	used_nodes=$($0 -u $QUEUE | tr ' ' '\n') 
+	comm -23 <(echo "$nodes") <(echo "$used_nodes")
+	;;
+    -i|--idle)
+        if [ -z "$NN" ]; then
+            usage
+        fi
+        rest_nodes=$($0 -r $QUEUE | tr ' ' '\n')
+        i=0
+        for node in $rest_nodes; do
+            #if ! ssh -q $node exit; then
+            if ! ping -c 1 $node >/dev/null 2>&1; then
+                continue
+            fi
+            users=$(ssh -q $(whoami)@$node "top -b -n 1 | sed '1,/PID/d' | awk '\$9 >= $PCT {print \$2}' | sort | uniq")
+            if [ -z "$users" ]; then
+                idle_nodes+=" $node"
+	        ((i++))
+            fi
+            if [ $i -eq $NN ]; then
+        	break
+            fi
+        done
+        if [ $i -ne $NN ]; then
+            echo "======================================"
+            echo " There is not enough $QUEUE nodes."
+            echo " Only $i left."
+            echo "======================================"
+            exit 2
+        fi
+        echo $idle_nodes
+        ;;
+    -h|--help)
+        usage
+        ;;
+    *)
+        usage
+        ;;
+esac
+

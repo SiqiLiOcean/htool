@@ -1,0 +1,126 @@
+#!/bin/bash
+#========================================================================
+# hstat - A script to query information about jobs running on a computing
+#         cluster using qstat
+#
+# Usage: 
+# hstat [-i|--id] [-q|--queue] [-p|--processor] [-n|--node] [-m|--memory] 
+#       [num [user]]
+#   -i, --id        Display the job ID
+#   -q, --queue     Display the queue name
+#   -p, --processor Display the processor information
+#   -n, --node      Display the node information
+#   -m, --memory    Display the memory usage information
+#   -d, --directory Display the running path
+#   -h, --help      Display the usage information
+#   num             ordinal of the job (default is 1)
+#   user            user name (default is the current user)
+#
+# Examples:
+#   hstat             # Show the same results of 'qstat'
+#   hstat -i          # Display job ID for the 1st job of current user
+#   hstat -q 2        # Display queue name for the 2nd job of current user
+#   hstat -p 3 alice  # Display the processors for the 3rf job of alice
+#   hstat -n 1 alice  # Display the nodes for the 1st job of alice
+#   hstat -m 1 alice  # Display the memory usage for the 1st job of alice
+#   hstat -d 1 alice  # Display the running path for the 1st job of alice
+#  
+# Note: If no options are provided, the usage information is displayed.
+#
+#
+# Siqi Li, SMAST
+# 2024-04-02
+#========================================================================
+
+# Function to display usage information
+usage() {
+    echo "Usage: hstat" 1>&2
+    echo "    [-i|--id]" 1>&2
+    echo "    [-q|--queue]" 1>&2 
+    echo "    [-p|--processor]" 1>&2
+    echo "    [-n|--node]" 1>&2
+    echo "    [-m|--memory]" 1>&2
+    echo "    [-d|--directory]" 1>&2
+    echo "    [-h|--help]" 1>&2
+    echo "    [num [user]]" 1>&2
+    exit 1
+}
+
+# Parse command line options
+while [[ $# -gt 0 ]]; do
+    # input
+    key="$1"
+    if [ -z "$2" ]; then
+        n=1
+    else
+        n=$2
+    fi
+    if [ -z "$3" ]; then
+        user=`whoami`
+    else
+        user=$3
+    fi
+
+    # Options
+    case $key in
+        -i|--id)
+            qstat | grep $user | awk -v n=$n 'NR==n {gsub(".hydra", "", $1); print $1}'
+            exit 0
+            ;;
+        -q|--queue)
+            id=`bash $0 -i $n $user`
+            if [ -n "$id" ]; then
+                qstat -f $id | grep queue | awk '{print $3}'
+            fi
+            exit 0
+            ;;
+        -n|--node)
+            id=`bash $0 -i $n $user`
+            if [ -n "$id" ]; then
+                qstat -f $id | grep -oP '(?<=\().*?(?=:)' | sort -u
+            fi
+            exit 0
+            ;;
+        -p|--processor)
+            id=`bash $0 -i $n $user`
+            if [ -n "$id" ]; then
+                echo ---------------------------------
+                queue=`bash $0 -q $n $user`
+                echo queue: $queue
+                qstat -n $id | tail -n +7 | sed 's/\// - /g' | tr '+' '\n' | sed 's/^[[:space:]]*//;/^$/d'
+            fi
+            exit 0
+            ;;
+        -m|--memory)
+            id=`bash $0 -i $n $user`
+            nodes=`bash $0 -n $n $user`
+	    echo '         |  total |   used |  avail |'
+            for node in $nodes; do
+		mem=$(ssh -q $(whoami)@$node "free -h | awk 'NR==2 {print substr(\$0, index(\$0, \":\")+1)}'")
+		s1=$(echo $mem | awk '{printf "%7s", $1}')
+		s2=$(echo $mem | awk '{printf "%7s", $2}')
+		s6=$(echo $mem | awk '{printf "%7s", $6}')
+		node=$(echo $node | awk '{printf "%8s", $1}')
+		node=$(printf "%8s" "$node")
+		echo "$node |$s1 |$s2 |$s6 |"
+            done
+            exit 0
+            ;;
+        -d|--directory)
+            id=`bash $0 -i $n $user`
+            directory=$(qstat -f $id |tr -d '[:space:]' |grep -oP 'PWD=\K[^,]+')
+            echo $directory
+	    exit 0
+            ;;
+        *)
+            usage
+            ;;
+    esac
+    shift
+done
+
+# If no options provided, display usage information
+if [ $# -eq 0 ]; then
+    qstat
+fi
+

@@ -1,0 +1,97 @@
+#!/bin/bash
+#========================================================================
+# hrun_exp - An example script to submit jobs on hydra
+#
+# Usage:
+#   1. Copy hrun_exp to your run directory as hrun
+#   2. Edit the following settings
+#        Setting  | Description          | Suggestion
+#        USER     | User name            | $(whoami)
+#        JOB_NAME | Job name             | test
+#        LOG_OUT  | Out log file name    | log.out
+#        LOG_ERR  | Error log file name  | log.err
+#        LOG_RUN  | Backup of run script | log.run
+#        NN       | Node number          | 
+#        PPN      | Processor per node   |       32 /         24
+#        QUEUE    | Queue name           | microway / ibm-12core
+#        CMD      | Excutable command    | ./fvcom --casename=...
+#   3. bash hrun
+#
+# Siqi Li, SMAST
+# 2024-04-03
+#========================================================================
+
+USER=$(whoami)
+JOB_NAME=test
+LOG_OUT=log.out
+LOG_ERR=log.err
+LOG_RUN=log.run
+NN=2
+PPN=32
+QUEUE=microway
+#PPN=24
+#QUEUE=ibm-12core
+CMD=./hello
+
+read -r -d '' PBS_DIRECTIVES <<'EOF'
+#!/bin/sh
+#PBS -u <USER>
+#PBS -N <JOB_NAME>
+#PBS -o <LOG_OUT>
+#PBS -e <LOG_ERR>
+#PBS -l <NODES>
+#PBS -q <QUEUE>
+#PBS -r n
+
+#====================== Working Directory ========================
+# Change to the directory where the job was submitted
+# This job's working directory
+# (MAKE SURE THE PATH DOES NOT INCLUDE '/hosts/hydra/')
+WORKDIR=$(echo $PBS_O_WORKDIR | sed 's_/hosts/hydra/_/_')
+echo 'Working directory: ' $WORKDIR
+cd $WORKDIR
+CPUS=$(cat $PBS_NODEFILE | wc -l)
+NODE=$(cat $PBS_NODEFILE | sort | uniq)
+echo 'NodeFile         : ' $PBS_NODEFILE
+echo 'Nodes selected   : ' $NODE
+echo ----------------------------------------------------------
+echo
+
+#====================== Environment ==============================
+export MV2_ENABLE_AFFINITY=0
+export MV2_HOMOGENEOUS_CLUSTER=1
+
+#====================== Remove old logs ==========================
+rm <LOG_OUT>
+rm <LOG_ERR>
+
+#====================== Executable line ==========================
+start_time=`date`
+start=`date +%s`
+mpiexec --machinefile $PBS_NODEFILE -np $CPUS <CMD>
+end_time=`date`
+end=`date +%s`
+elapsed=$((end - start))
+hours=$((elapsed / 3600))
+minutes=$(( (elapsed % 3600) / 60 ))
+seconds=$((elapsed % 60))
+echo ----------------------------------------------------------
+echo "Start time: $start_time"
+echo "End time  : $end_time"
+echo "Runtime   : $hours hr, $minutes min, $seconds sec"
+
+EOF
+
+NODES="nodes=$(hnode -i $QUEUE $NN | sed "s/ /:ppn=${PPN}+/g"):ppn=${PPN}"
+
+PBS_DIRECTIVES=$(echo "$PBS_DIRECTIVES" | sed "s|<USER>|${USER}|g")
+PBS_DIRECTIVES=$(echo "$PBS_DIRECTIVES" | sed "s|<JOB_NAME>|${JOB_NAME}|g")
+PBS_DIRECTIVES=$(echo "$PBS_DIRECTIVES" | sed "s|<LOG_OUT>|${LOG_OUT}|g")
+PBS_DIRECTIVES=$(echo "$PBS_DIRECTIVES" | sed "s|<LOG_ERR>|${LOG_ERR}|g")
+PBS_DIRECTIVES=$(echo "$PBS_DIRECTIVES" | sed "s|<NODES>|${NODES}|g")
+PBS_DIRECTIVES=$(echo "$PBS_DIRECTIVES" | sed "s|<QUEUE>|${QUEUE}|g")
+PBS_DIRECTIVES=$(echo "$PBS_DIRECTIVES" | sed "s|<CMD>|${CMD}|g")
+
+printf "%s\n" "$PBS_DIRECTIVES" > ${LOG_RUN}
+printf "%s\n" "$PBS_DIRECTIVES"
+printf "%s\n" "$PBS_DIRECTIVES" | qsub
