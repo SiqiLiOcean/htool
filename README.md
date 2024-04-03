@@ -1,7 +1,3 @@
-Certainly! Here's a README draft for the 'htool' package, incorporating information from all four scripts:
-
----
-
 # htool
 
 **htool** is a collection of Bash scripts designed for managing tasks on a computing cluster managed by PBS. These scripts provide functionality to check node status, query job information, and submit jobs.
