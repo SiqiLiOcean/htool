@@ -49,7 +49,11 @@ There is a 'hello' example in the directory **exp** for testing.
    ```bash
    make
    ```
-3. Edit **hrun** and Submit the job in the parallel way.
+3. Copy hrun_exp here as **hrun** and edit it.
+   ```bash
+   cp /YOUR_htool_PATH/hrun_exp hrun
+   ```
+5. Submit the job in the parallel way.
    ```bash
    bash hrun
    ```
