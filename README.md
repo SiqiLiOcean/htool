@@ -23,11 +23,10 @@
 ## Usage
 
 1. Clone the 'htool' repository:
-
-   ```sh
+   ```bash
    git clone https://github.com/SiqiLiOcean/htool.git
    ```
-
+   
 2. Add the htool directory to PATH. For csh
    ```csh
    setenv PATH /hosts/hydra.smast.umassd.edu/data2/siqili/script/htool:$PATH
@@ -36,8 +35,25 @@
    ```bash
    export PATH=/hosts/hydra.smast.umassd.edu/data2/siqili/script/htool:$PATH
    ```
-4. Run the scripts as needed, following the usage instructions provided in each script's README.
+   
+3. Run the scripts as needed, following the usage instructions provided in each code.
 
+## Example
+
+There is a 'hello' example in the directory **exp** for testing.
+1. Go into the **exp** directory.
+   ```bash
+   cd exp
+   ```
+2. Compile the Fortran code.
+   ```bash
+   make
+   ```
+3. Edit **hrun** and Submit the job in the parallel way.
+   ```bash
+   bash hrun
+   ```
+   
 ## Author
 
 **htool** is maintained by Siqi Li, SMAST.
