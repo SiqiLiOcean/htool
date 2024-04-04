@@ -38,7 +38,12 @@
    export PATH=${HTOOL}:$PATH
    ```
    
-3. Run the scripts as needed, following the usage instructions provided in each code.
+3. Add the execute permission
+   ```bash
+   chmod u+x ${HTOOL}/h*
+   ```
+   
+4. Run the scripts as needed, following the usage instructions provided in each code.
 
 ## Example
 
