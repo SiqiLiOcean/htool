@@ -18,7 +18,7 @@
 
 ### hrun_exp
 
-**hrun** is an example script to submit jobs on the 'hydra' cluster using PBS directives. It allows users to customize job settings such as user name, job name, log file names, node number, processor per node, queue name, and executable command.
+**hrun** is an example script to submit jobs on the 'hydra' cluster using PBS directives. It allows users to customize job settings such as user name, job name, log file names, node number, processor per node, queue name, and executable command. **It takes seconds to find out idle nodes.**
 
 ## Usage
 
