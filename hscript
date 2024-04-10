@@ -1,0 +1,23 @@
+#!/bin/bash
+#========================================================================
+# hscript - A script to copy the ${HTOOL}/hrun_exp to your run directory
+#
+# Usage:
+# hscript hrun Copy the ${HTOOL}/hrun_exp to ./hrun
+#
+# Siqi Li, SMAST
+# 2024-04-02
+#========================================================================
+
+
+# Function to display usage information
+usage() {
+    echo "Usage: hstat hrun" 1>&2
+    exit 1
+}
+
+if [ -z "$1" ]; then
+    usage
+fi
+
+cp ${HTOOL}/hrun_exp $1
