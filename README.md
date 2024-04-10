@@ -16,6 +16,9 @@
 
 **hstat** is a script to query information about jobs running on a computing cluster using `qstat`, providing details such as job ID, queue name, processor information, node information, memory usage, and running path.
 
+### hscript
+**hscript** is a script to copy the ${HTOOL}/hrun_exp to your run directory.
+
 ### hrun_exp
 
 **hrun** is an example script to submit jobs on the 'hydra' cluster using PBS directives. It allows users to customize job settings such as user name, job name, log file names, node number, processor per node, queue name, and executable command. **It takes seconds to find out idle nodes.**
@@ -58,7 +61,7 @@ There is a 'hello' example in the directory **exp** for testing.
    ```
 3. Copy hrun_exp here as **hrun** and edit it.
    ```bash
-   cp /YOUR_htool_PATH/hrun_exp hrun
+   hscript hrun
    ```
 5. Submit the job in the parallel way.
    ```bash
